@@ -135,6 +135,9 @@ class Question(models.Model):
     # lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
 
     def is_get_score(self, selected_ids: list[int]):
+        # If any incorrect choices are selected, fail this question
+        if self.choice_set.filter(is_correct=False, id__in=selected_ids).exists():
+            return False
         all_answers = self.choice_set.filter(is_correct=True).count()
         selected_correct = self.choice_set.filter(
             is_correct=True, id__in=selected_ids).count()
