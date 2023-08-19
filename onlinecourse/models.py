@@ -12,12 +12,14 @@ import uuid
 
 # Instructor model
 class Instructor(models.Model):
+    # attributes
+    full_time = models.BooleanField(default=True)
+    total_learners = models.IntegerField()
+    # relationships
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    full_time = models.BooleanField(default=True)
-    total_learners = models.IntegerField()
 
     def __str__(self):
         return self.user.username
@@ -25,10 +27,6 @@ class Instructor(models.Model):
 
 # Learner model
 class Learner(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
     STUDENT = 'student'
     DEVELOPER = 'developer'
     DATA_SCIENTIST = 'data_scientist'
@@ -39,6 +37,7 @@ class Learner(models.Model):
         (DATA_SCIENTIST, 'Data Scientist'),
         (DATABASE_ADMIN, 'Database Admin')
     ]
+    # attributes
     occupation = models.CharField(
         null=False,
         max_length=20,
@@ -46,6 +45,11 @@ class Learner(models.Model):
         default=STUDENT
     )
     social_link = models.URLField(max_length=200)
+    # relationships
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.user.username + "," + \
@@ -54,15 +58,16 @@ class Learner(models.Model):
 
 # Course model
 class Course(models.Model):
+    # attributes
     name = models.CharField(null=False, max_length=30, default='online course')
     image = models.ImageField(upload_to='course_images/')
     description = models.CharField(max_length=1000)
     pub_date = models.DateField(null=True)
+    total_enrollment = models.IntegerField(default=0)
+    # relationships
     instructors = models.ManyToManyField(Instructor)
     users = models.ManyToManyField(
         settings.AUTH_USER_MODEL, through='Enrollment')
-    total_enrollment = models.IntegerField(default=0)
-    is_enrolled = False
 
     def __str__(self):
         return "Name: " + self.name + "," + \
@@ -71,10 +76,12 @@ class Course(models.Model):
 
 # Lesson model
 class Lesson(models.Model):
+    # attributes
     title = models.CharField(max_length=200, default="title")
     order = models.IntegerField(default=0)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     content = models.TextField()
+    # relationships
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
 # Enrollment model
@@ -89,13 +96,14 @@ class Enrollment(models.Model):
         (HONOR, 'Honor'),
         (BETA, 'BETA')
     ]
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    # attributes
     date_enrolled = models.DateField(default=now)
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
-
+    # relationships
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 # <HINT> Create a Question Model with:
     # Used to persist question content for a course
@@ -103,11 +111,6 @@ class Enrollment(models.Model):
     # Has a grade point for each question
     # Has question content
     # Other fields and methods you would like to design
-# class Question(models.Model):
-    # Foreign key to lesson
-    # question text
-    # question grade/mark
-
     # <HINT> A sample model method to calculate if learner get the score of the question
     # def is_get_score(self, selected_ids):
     #    all_answers = self.choice_set.filter(is_correct=True).count()
@@ -117,9 +120,19 @@ class Enrollment(models.Model):
     #    else:
     #        return False
 class Question(models.Model):
+    # attributes
+    question_text = models.CharField(max_length=250)
+    grade = models.PositiveIntegerField()
+    # relationships
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    text = models.CharField(max_length=250)
-    mark = models.PositiveIntegerField()
+    # The following relationship name appears on the ER Diagram, but not covered in the actual hints
+    # lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+
+    def is_get_score(self, selected_ids: list[int]):
+        all_answers = self.choice_set.filter(is_correct=True).count()
+        selected_correct = self.choice_set.filter(
+            is_correct=True, id__in=selected_ids).count()
+        return all_answers == selected_correct
 
     def __str__(self):
         return f"{self.course.name}: {self.text}"
@@ -130,20 +143,19 @@ class Question(models.Model):
     # Choice content
     # Indicate if this choice of the question is a correct one or not
     # Other fields and methods you would like to design
-# class Choice(models.Model):
-
-
 class Choice(models.Model):
+    # attributes
+    choice_text = models.CharField(max_length=250)
+    is_correct = models.BooleanField()
+    # relationships
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    text = models.CharField(max_length=250)
-    correct = models.BooleanField()
 
 
 # <HINT> The submission model
-# One enrollment could have multiple submission
-# One submission could have multiple choices
-# One choice could belong to multiple submissions
-# class Submission(models.Model):
-#    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-#    choices = models.ManyToManyField(Choice)
+    # One enrollment could have multiple submission
+    # One submission could have multiple choices
+    # One choice could belong to multiple submissions
+class Submission(models.Model):
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    choices = models.ManyToManyField(Choice)
 #    Other fields and methods you would like to design
