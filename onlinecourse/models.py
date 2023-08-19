@@ -70,7 +70,7 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL, through='Enrollment')
 
     def __str__(self):
-        return "Name: " + self.name + "," + \
+        return "Name: " + self.name + ", " + \
                "Description: " + self.description
 
 
@@ -82,6 +82,9 @@ class Lesson(models.Model):
     content = models.TextField()
     # relationships
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.title}, in Course: {self.course.name}"
 
 
 # Enrollment model
@@ -104,6 +107,9 @@ class Enrollment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"User: {self.user.username}, Course: {self.course.name}"
 
 # <HINT> Create a Question Model with:
     # Used to persist question content for a course
@@ -135,7 +141,7 @@ class Question(models.Model):
         return all_answers == selected_correct
 
     def __str__(self):
-        return f"{self.course.name}: {self.text}"
+        return f"{self.question_text}, in Course: {self.course.name}"
 
 #  <HINT> Create a Choice Model with:
     # Used to persist choice content for a question
@@ -149,6 +155,9 @@ class Choice(models.Model):
     is_correct = models.BooleanField()
     # relationships
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.choice_text}, in Question: {self.question}"
 
 
 # <HINT> The submission model
