@@ -1,3 +1,10 @@
+**Screenshots**
+
+1. The updated course details page with the no questions answered in the exam section ![updated_details_noanswers](./updated_details_noanswers.png)
+2. The updated course details page with all questions answered in the exam section ![updated_details_allanswers](./updated_details_allanswers.png)
+3. The new exam submission and result page and show a FAILED exam result ![exam_failed](./exam_failed.png)
+4. The new exam submission and result page to show a SUCCESS exam result ![exam_success](./exam_success.png)
+
 
 **General Notes**
 
